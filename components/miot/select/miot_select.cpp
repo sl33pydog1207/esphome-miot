@@ -10,7 +10,8 @@ void MiotSelect::setup() {
   this->parent_->register_listener(this->siid_, this->piid_, this->poll_, mvtUInt, [this](const MiotValue &value) {
     ESP_LOGV(TAG, "MCU reported select %" PRIu32 ":%" PRIu32 " is: %" PRIu32, this->siid_, this->piid_, value.as_uint);
 
-    auto options = this->traits.get_options();
+    // FIX 1: Use reference (&) to avoid copying FixedVector
+    const auto &options = this->traits.get_options();
     auto mappings = this->mappings_;
     auto it = std::find(mappings.cbegin(), mappings.cend(), value.as_uint);
     if (it == mappings.end()) {
@@ -41,9 +42,13 @@ void MiotSelect::dump_config() {
   ESP_LOGCONFIG(TAG, "  SIID: %" PRIu32, this->siid_);
   ESP_LOGCONFIG(TAG, "  PIID: %" PRIu32, this->piid_);
   ESP_LOGCONFIG(TAG, "  Options are:");
-  auto options = this->traits.get_options();
+  
+  // FIX 2: Use reference (&) here as well
+  const auto &options = this->traits.get_options();
+  
   for (auto i = 0; i < this->mappings_.size(); i++)
-    ESP_LOGCONFIG(TAG, "    %i: %s", this->mappings_.at(i), options.at(i).c_str());
+    // FIX 3: Removed .c_str() - options.at(i) is already a const char*
+    ESP_LOGCONFIG(TAG, "    %i: %s", this->mappings_.at(i), options.at(i));
 }
 
 }  // namespace miot
