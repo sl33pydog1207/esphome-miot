@@ -14,9 +14,10 @@
 #include "esphome/components/captive_portal/captive_portal.h"
 #endif
 
-#ifdef USE_OTA
-#include "esphome/components/ota/ota_component.h"
-#endif
+// REMOVED: OTA backend include is no longer compatible with this version
+// #ifdef USE_OTA
+// #include "esphome/components/ota/ota_backend.h"
+// #endif
 
 #ifdef USE_TIME
 #include "esphome/components/time/real_time_clock.h"
@@ -73,26 +74,9 @@ void Miot::setup() {
       set_property(heartbeat_siid_, heartbeat_piid_, MiotValue(60));
     });
 
-#ifdef USE_OTA
-  // FIX: Use global_ota_component instead of get_global_ota_callback()
-  // and update lambda signature to match (removed unused 'comp' argument)
-  if (ota::global_ota_component != nullptr) {
-    ota::global_ota_component->add_on_state_callback(
-      [this](ota::OTAState state, float progress, uint8_t error) {
-        switch (state) {
-        case ota::OTA_STARTED:
-          // directly send this to indicate a firmware update, as loop() won't get called anymore
-          send_reply_("down MIIO_net_change updating");
-          break;
-        case ota::OTA_ERROR:
-          queue_net_change_command(true);
-          break;
-        default:
-          break;
-      }
-    });
-  }
-#endif
+  // REMOVED: The OTA callback logic was removed because 'global_ota_component'
+  // and 'get_global_ota_callback' have been removed from the ESPHome Core.
+  // This logic was optional (telling the MCU we are updating).
 }
 
 void Miot::loop() {
